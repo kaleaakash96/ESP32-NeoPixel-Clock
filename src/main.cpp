@@ -4,7 +4,7 @@
 #define DELAYVAL 500 // Time (in milliseconds) to pause between pixels
 
 Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
-int led0,led1,led2;
+
 void setup() {
   // These lines are specifically to support the Adafruit Trinket 5V 16 MHz.
   // Any other board, you can remove this part (but no harm leaving it):
@@ -26,20 +26,89 @@ void loop() {
 
 }
 
-void Digit_one(int input, uint8_t r, uint8_t g, uint8_t b){
+void Digit(uint8_t hour, uint8_t min, uint8_t format, uint8_t r, uint8_t g, uint8_t b){
 
+    int led0,led1,led2;
     int numArray[10][7] = {
-      {1,1,1,1,1,1,0}, // 0
-      {0,1,1,0,0,0,0}, // 1
-      {1,1,0,1,1,0,1}, // 2
-      {1,1,1,1,0,0,1}, // 3
-      {0,1,1,0,0,1,1}, // 4
-      {1,0,1,1,0,1,1}, // 5
-      {1,0,1,1,1,1,1}, // 6
-      {1,1,1,0,0,0,0}, // 7
+      {1,1,1,0,1,1,1}, // 0
+      {1,0,0,0,1,0,0}, // 1
+      {0,1,1,1,1,1,0}, // 2
+      {1,1,0,1,1,1,0}, // 3
+      {1,0,0,1,1,0,1}, // 4
+      {1,1,0,1,0,1,1}, // 5
+      {1,1,1,1,0,1,1}, // 6
+      {1,0,0,0,1,1,0}, // 7
       {1,1,1,1,1,1,1}, // 8
-      {1,1,1,1,0,1,1}  // 9
+      {1,1,0,1,1,1,1}  // 9
     };
+
+    // if(format == 0){
+    //   if(hour > 12)
+    //   hour = 9;
+    // }
+    // if(min >)
+        // 23:59 max
+        // 00:00 min
+
+        
+
+        for (int i = 0; i < 7; i++) {
+            if (numArray[input][i] == 1){
+                led0 = i*3;
+                led1 = led0+1;
+                led2 = led1+1;
+                // printf("led0: %d, led1: %d, led2: %d \n",led0,led1,led2);
+                pixels.setPixelColor(led0, pixels.Color(r, g, b));
+                pixels.setPixelColor(led1, pixels.Color(r, g, b));
+                pixels.setPixelColor(led2, pixels.Color(r, g, b));
+                pixels.show();
+            }else{
+                pixels.setPixelColor(led0, pixels.Color(0,0,0));
+                pixels.setPixelColor(led1, pixels.Color(0,0,0));
+                pixels.setPixelColor(led2, pixels.Color(0,0,0));
+                pixels.show();
+            }
+
+        }
+
+        for (int i = 0; i < 7; i++) {
+            if (numArray[input][i] == 1){
+                led0 = i*3;
+                led1 = led0+1;
+                led2 = led1+1;
+                // printf("led0: %d, led1: %d, led2: %d \n",led0,led1,led2);
+                pixels.setPixelColor(led0, pixels.Color(r, g, b));
+                pixels.setPixelColor(led1, pixels.Color(r, g, b));
+                pixels.setPixelColor(led2, pixels.Color(r, g, b));
+                pixels.show();
+            }else{
+                pixels.setPixelColor(led0, pixels.Color(0,0,0));
+                pixels.setPixelColor(led1, pixels.Color(0,0,0));
+                pixels.setPixelColor(led2, pixels.Color(0,0,0));
+                pixels.show();
+            }
+
+        }
+
+        for (int i = 0; i < 7; i++) {
+            if (numArray[input][i] == 1){
+                led0 = i*3;
+                led1 = led0+1;
+                led2 = led1+1;
+                // printf("led0: %d, led1: %d, led2: %d \n",led0,led1,led2);
+                pixels.setPixelColor(led0, pixels.Color(r, g, b));
+                pixels.setPixelColor(led1, pixels.Color(r, g, b));
+                pixels.setPixelColor(led2, pixels.Color(r, g, b));
+                pixels.show();
+            }else{
+                pixels.setPixelColor(led0, pixels.Color(0,0,0));
+                pixels.setPixelColor(led1, pixels.Color(0,0,0));
+                pixels.setPixelColor(led2, pixels.Color(0,0,0));
+                pixels.show();
+            }
+
+        }
+
         for (int i = 0; i < 7; i++) {
             if (numArray[input][i] == 1){
                 led0 = i*3;
