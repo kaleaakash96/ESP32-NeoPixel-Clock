@@ -1,22 +1,22 @@
 
 # Effect mode Settings commands 
-  Commands                           Effect & color
-    0.                              Default Effect 
-    1.                              Red fadding effect
-    2.                              Green fadding effect
-    3.                              Blue fadding effect      
-    4.                              Cyan fadding effect
-    5.                              Coral fadding effect    
-    6.                              gold fadding effect
-    7.                              Orange fadding effect
-    8.                              Red solid
-    9.                              Green solid  
-    A.                              Blue solid
-    B.                              Cyan solid
-    C.                              Coral solid  
-    D.                              gold solid
-    E.                              orange solid
-    F.                              Rainbow effect  
+    Commands                           Effect & color
+      0.                              Default Effect 
+      1.                              Red fadding effect
+      2.                              Green fadding effect
+      3.                              Blue fadding effect      
+      4.                              Cyan fadding effect
+      5.                              Coral fadding effect    
+      6.                              gold fadding effect
+      7.                              Orange fadding effect
+      8.                              Red solid
+      9.                              Green solid  
+      A.                              Blue solid
+      B.                              Cyan solid
+      C.                              Coral solid  
+      D.                              gold solid
+      E.                              orange solid
+      F.                              Rainbow effect  
 
 
 # Set Time on Clock 
