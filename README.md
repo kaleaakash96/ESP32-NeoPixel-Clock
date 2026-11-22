@@ -20,10 +20,10 @@
 
 
 # Set Time on Clock 
-  "THHMMT" == T = start Command , HH = Set time Hours , MM = Set time Minuts , T = End command.
+  "GHHMMG" == G = start Command , HH = Set time Hours , MM = Set time Minuts , T = End command.
 
 # Set Clock Digit Color 
-  "GXG"  === G = Start command , X = 1 - 7 Color code as below mention , G = End Command.
+  "IXI"  === I = Start command , X = 1 - 7 Color code as below mention , G = End Command.
   
     1. Red solid
     2. Green
