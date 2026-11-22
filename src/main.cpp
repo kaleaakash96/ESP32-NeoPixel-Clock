@@ -17,14 +17,18 @@
 #include <Arduino.h>
 #include "BluetoothSerial.h"
 
+#define LED_PIN_A     12//19 //10  // Wall Sign     // need to change
 #define LED_PIN_W     14//18 //6   // wall  // need to change
 #define LED_PIN_C     27//19 //10  // clock     // need to change
 #define LED_PIN_S     26//19 //10  // Wall Sign     // need to change
 
 // How many Neostrip_C are attached to the Arduino?
+#define LED_COUNT_A   62 // temp
 #define LED_COUNT_W   150 // 160 
 #define LED_COUNT_C   90
 #define LED_COUNT_S   40
+
+int new_led = 12;
 
 char buffer[64]; // Define character array with sufficient size
 int bytesRead = 0;
@@ -34,12 +38,13 @@ uRTCLib rtc(0x68);
 BluetoothSerial SerialBT;
 
 char clock_color = '0';
-char mode = '0';
+char mode = '0';  /// 0
 
-int cnt_s = 99; // old 103
+int cnt_s = 13; //98; // old 103
 
-int cnt_s_1 = 86; // old 90
+int cnt_s_1 = 0; //86; // old 90
 
+Adafruit_NeoPixel strip_A(LED_COUNT_A, LED_PIN_A, NEO_GRB + NEO_KHZ800);  // Shelf and Arrow
 Adafruit_NeoPixel strip_W(LED_COUNT_W, LED_PIN_W, NEO_GRB + NEO_KHZ800);  // Wall 
 Adafruit_NeoPixel strip_C(LED_COUNT_C, LED_PIN_C, NEO_GRB + NEO_KHZ800);  // Clock 
 Adafruit_NeoPixel strip_S(LED_COUNT_S, LED_PIN_S, NEO_GRB + NEO_KHZ800);  // Sign 
@@ -171,7 +176,7 @@ void Digit(long hour, uint8_t min, uint8_t format, uint8_t r, uint8_t g, uint8_t
         }
         
         strip_C.show();
-        delay(20);
+        delay(50);
 }
 
 void counter(){
@@ -185,12 +190,14 @@ void counter(){
   // }
 
     if(Serial.available()>0){
-    uint16_t data = Serial.parseInt();
-    strip_W.clear();
-    strip_W.setPixelColor(data, strip_W.Color(0,255,0));         //  Set pixel's color (in RAM)
-    strip_W.show();
-    Serial.println(data);
-  }
+        uint16_t data = Serial.parseInt();
+        strip_W.clear();
+        strip_W.setPixelColor(data, strip_W.Color(0,255,0));         //  Set pixel's color (in RAM)
+        strip_W.show();
+        Serial.println(data);
+
+        
+      }
 
 
   // for(int i = 42;i>=0;i--){
@@ -201,6 +208,17 @@ void counter(){
 
   //   delay(100);   
   // }
+}
+
+
+void BTCounter(){
+        if(SerialBT.available()>0){
+        uint16_t data = SerialBT.parseInt();
+        strip_W.clear();
+        strip_W.setPixelColor(data, strip_W.Color(0,255,0));         //  Set pixel's color (in RAM)
+        strip_W.show();
+        SerialBT.println(data);
+      }
 }
 
 void letter(){
@@ -268,26 +286,27 @@ void colorWipe(uint8_t R, uint8_t G, uint8_t B, int wait) {
                            //  Update strip to match
     if (i > 31 && i < 43){
       
-      strip_W.setPixelColor(cnt_s, strip_W.Color(R,G,B));
-      strip_W.setPixelColor(cnt_s_1, strip_W.Color(R,G,B));
+      strip_A.setPixelColor(cnt_s, strip_A.Color(R,G,B));
+      strip_A.setPixelColor(cnt_s_1, strip_A.Color(R,G,B));
 
-      if (cnt_s == 99){
-        strip_W.setPixelColor(99, strip_W.Color(G,R,B));
+      if (cnt_s == new_led){
+        strip_A.setPixelColor(new_led, strip_A.Color(G,R,B));
       }
 
-      if (cnt_s == 98 ){
-        strip_W.setPixelColor(98, strip_W.Color(G,R,B));
+      if (cnt_s == new_led +1 ){
+        strip_A.setPixelColor(new_led +1 , strip_A.Color(G,R,B));
       }
 
       cnt_s--;
       cnt_s_1++;
     }
 
+    strip_A.show(); 
     strip_W.show(); 
 
     if(i == 44){
-      cnt_s = 99;
-      cnt_s_1 = 90;
+      cnt_s = 13; //97;
+      cnt_s_1 = 0; //86;
     }
     delay(wait);                           //  Pause for a moment
   }
@@ -300,7 +319,8 @@ void colorWipe(uint8_t R, uint8_t G, uint8_t B, int wait) {
 
 }
 
-void rainbowSection(int start, int end, int wait, Adafruit_NeoPixel strip) {
+void rainbowSection(int start, int end, int wait, Adafruit_NeoPixel &strip) {
+  
   for(long firstPixelHue = 0; firstPixelHue < 65536; firstPixelHue += 256) {
     for(int i = start; i <= end; i++) {
       int pixelHue = firstPixelHue + ((i - start) * 65536L / (end - start + 1));
@@ -309,22 +329,24 @@ void rainbowSection(int start, int end, int wait, Adafruit_NeoPixel strip) {
     strip.show();
     delay(wait);
   }
+
+  // strip.clear();
 }
 
-// void rainbow_Sign(int start, int end, int wait) {
-//   for(long firstPixelHue = 0; firstPixelHue < 65536; firstPixelHue += 256) {
-//     for(int i = start; i <= end; i++) {
-//       int pixelHue = firstPixelHue + ((i - start) * 65536L / (end - start + 1));
-//       strip_S.setPixelColor(i, strip_S.gamma32(strip_S.ColorHSV(pixelHue)));
-//     }
-//     strip_S.show();
-//     delay(wait);
-//   }
-// }
+void rainbow_Sign(int start, int end, int wait) {
+  for(long firstPixelHue = 0; firstPixelHue < 65536; firstPixelHue += 256) {
+    for(int i = start; i <= end; i++) {
+      int pixelHue = firstPixelHue + ((i - start) * 65536L / (end - start + 1));
+      strip_S.setPixelColor(i, strip_S.gamma32(strip_S.ColorHSV(pixelHue)));
+    }
+    strip_S.show();
+    delay(wait);
+  }
+}
 
 void fadding_effect(uint8_t targetRed, uint8_t targetGreen, uint8_t targetBlue){
-
-  Digit(myclock().toInt(),0,0,targetRed,targetGreen,targetBlue);
+    int delay_time = 10; 
+  Digit(myclock().toInt(),0,0,targetRed,targetGreen,targetBlue);  // Clock color set 
 // Fade Up: 0 to 100% brightness
   for (int brightness = 0; brightness <= 100; brightness++) {
     // Calculate current RGB values as a percentage of the target
@@ -334,21 +356,19 @@ void fadding_effect(uint8_t targetRed, uint8_t targetGreen, uint8_t targetBlue){
 
     for (int i = 0; i < strip_W.numPixels(); i++) {
 
+      strip_A.setPixelColor(i, strip_A.Color(g,r,b));
       strip_W.setPixelColor(i, strip_W.Color(g,r,b));
       strip_S.setPixelColor(i, strip_S.Color(g,r,b));
 
-       if (i >= 102){
-        strip_W.setPixelColor(i, strip_W.Color(r,g,b));
+       if (i >= new_led){
+        strip_A.setPixelColor(i, strip_A.Color(r,g,b));
       }
 
-      // if (i == 103){
-      //   strip_W.setPixelColor(103, strip_W.Color(g,r,b));
-      // }
-
     }
+    strip_A.show();
     strip_W.show();
     strip_S.show(); 
-    delay(10); // Adjust delay for fade speed
+    delay(delay_time); // Adjust delay for fade speed
   }
 
   // Fade Down: 100% to 0% brightness
@@ -358,20 +378,21 @@ void fadding_effect(uint8_t targetRed, uint8_t targetGreen, uint8_t targetBlue){
     int b = (targetBlue * brightness) / 100;
 
     for (int i = 0; i < strip_W.numPixels(); i++) {
+
+      strip_A.setPixelColor(i, strip_A.Color(g,r,b));
       strip_W.setPixelColor(i, strip_W.Color(g,r,b));
       strip_S.setPixelColor(i, strip_S.Color(g,r,b));
 
-       if (i >= 102){
-        strip_W.setPixelColor(i, strip_W.Color(r,g,b));
+       if (i >= new_led){
+        strip_A.setPixelColor(i, strip_A.Color(r,g,b));
       }
 
-      // if (i == 103){
-      //   strip_W.setPixelColor(103, strip_W.Color(g,r,b));
-      // }
     }
+
+    strip_A.show();
     strip_W.show();
     strip_S.show();
-    delay(10);
+    delay(delay_time);
   }
 
 }
@@ -379,20 +400,29 @@ void fadding_effect(uint8_t targetRed, uint8_t targetGreen, uint8_t targetBlue){
 void default_effect(){
 
   Digit(myclock().toInt(),0,0,0,255,0);
-  colorWipe(255,   0,   0, 50); // Red
-  rainbowSection(100,147,10,strip_W);
-  colorWipe(0, 255,   0, 50); // Green
-  rainbowSection(100,147,10,strip_W);
-  colorWipe(0,   0, 255, 50); // Blue
-  rainbowSection(100,147,10,strip_W);
 
-  rainbowSection(0,35,10,strip_S);
+  colorWipe(255,0,0,100); // Red
+  rainbowSection(14,61,10,strip_A);
+  colorWipe(0,255,0,100); // Green
+  rainbowSection(14,61,10,strip_A);
+  colorWipe(0,0,255,100); // Blue
+  rainbowSection(14,61,10,strip_A);
 
-  // rainbow_Sign(0,35,10);
+  rainbow_Sign(0,35,10);
 
 }
 
 void Solid_Color(uint8_t R, uint8_t G, uint8_t B){
+
+  for (int i = 0; i < strip_A.numPixels(); i++)
+  {
+    strip_A.setPixelColor(i,strip_A.Color(G,R,B));
+
+    if (i >= new_led){
+      strip_A.setPixelColor(i, strip_A.Color(R,G,B));
+    }
+    /* code */
+  }
 
   for (int i = 0; i < strip_S.numPixels(); i++)
   {
@@ -403,13 +433,10 @@ void Solid_Color(uint8_t R, uint8_t G, uint8_t B){
     for (int i = 0; i < strip_W.numPixels(); i++)
   {
     strip_W.setPixelColor(i,strip_W.Color(G,R,B));
-
-    if (i >= 98){
-        strip_W.setPixelColor(i, strip_W.Color(R,G,B));
-      }
     /* code */
   }
   
+  strip_A.show();
   strip_S.show();
   strip_W.show();
 
@@ -420,112 +447,173 @@ void Solid_Color(uint8_t R, uint8_t G, uint8_t B){
 // =========================
 // TASK 1
 // =========================
+
+// void blinkLed1(void * parameter)
+// {
+//     while(true)
+//     {
+//        if (SerialBT.available()>0)
+//   {
+//         // buffer[64]; // Define character array with sufficient size
+//         bytesRead = SerialBT.readBytesUntil('\n', buffer, sizeof(buffer) - 1);
+        
+//         // Null-terminate the string if bytes were read
+//         if (bytesRead > 0) {
+//           // buffer[bytesRead] = '\0';
+//           // Serial.println(buffer);
+//           if (buffer[0] == 'T' && buffer[5] == 'T')  // for Clock time Set 
+//           {
+//             mode = 'T';
+//           }
+
+//           if (buffer[0] == 'C' && buffer[2] == 'C')  // for Clock color change
+//           {
+//             mode = 'Z';
+//           }
+
+//           if (buffer[0] == 'P')  // to check set clock time on serial blue terinal
+//           {
+//             mode = 'P';
+//             /* code */
+//           }
+//         }
+
+//       switch (buffer[0])
+//     {
+//     case '0':
+//       mode = '0';
+//       /* code */
+//       break;
+
+//     case '1':
+//       mode = '1';
+//       /* code */
+//       break;
+    
+//     case '2':
+//       mode = '2';
+//       /* code */
+//       break;
+
+//     case '3':
+//       mode = '3';
+//       /* code */
+//       break;
+    
+//     case '4':
+//       mode = '4';
+//       /* code */
+//       break;
+    
+//     case '5':
+//       mode = '5';
+//       /* code */
+//       break;
+
+//     case '6':
+//       mode = '6';
+//       /* code */
+//       break;
+
+//     case '7':
+//       mode = '7';
+//       /* code */
+//       break;
+
+//     case '8':
+//       mode = '8';
+//       /* code */
+//       break;
+
+//     case '9':
+//       mode = '9';
+//       /* code */
+//       break;
+    
+//     case 'A':
+//       mode = 'A';
+//       /* code */
+//       break;
+
+//     case 'B':
+//       mode = 'B';
+//       /* code */
+//       break;
+
+//     case 'C':
+//       mode = 'C';
+//       /* code */
+//       break;
+
+//     case 'D':
+//       mode = 'D';
+//       /* code */
+//       break;
+
+//     case 'E':
+//       mode = 'E';
+//       /* code */
+//       break;
+  
+//     case 'F':
+//       mode = 'F';
+//       /* code */
+//       break;
+
+//     default:
+//       break;
+//     }
+//     /* code */
+//   }
+//         // digitalWrite(LED1, LOW);
+//         // vTaskDelay(500 / portTICK_PERIOD_MS);
+//         Serial.println(mode);
+//     }
+// }
+
+
 void blinkLed1(void * parameter)
 {
-    while(true)
+    while (true)  // true 
     {
-       if (SerialBT.available()>0)
-  {
-        // buffer[64]; // Define character array with sufficient size
-        bytesRead = SerialBT.readBytesUntil('\n', buffer, sizeof(buffer) - 1);
-        
-        // Null-terminate the string if bytes were read
-        if (bytesRead > 0) {
-          // buffer[bytesRead] = '\0';
-          // Serial.println(buffer);
-          if (buffer[0] == 'T' && buffer[5] == 'T')  // for Clock time Set 
-          {
-            mode = 'T';
-          }
+        if (SerialBT.available() > 0)
+        {
+            bytesRead = SerialBT.readBytesUntil(
+                '\n',
+                buffer,
+                sizeof(buffer) - 1
+            );
 
-          if (buffer[0] == 'C' && buffer[2] == 'C')  // for Clock color change
-          {
-            mode = 'Z';
-          }
+            // Always terminate received data
+            buffer[bytesRead] = '\0';
 
-          if (buffer[0] == 'P')  // to check set clock time on serial blue terinal
-          {
-            mode = 'P';
-            /* code */
-          }
+            if (bytesRead > 0)
+            {
+                if (buffer[0] == 'G' && buffer[5] == 'G')
+                {
+                    mode = 'G';
+                }
+                else if (buffer[0] == 'H')
+                {
+                    mode = 'H';
+                }else if (buffer[0] == 'I' && buffer[2] == 'I')
+                {
+                    mode = 'I';
+                }
+
+                if (buffer[0] <= 'F'){
+                       mode = buffer[0];
+                }
+            }
         }
 
-      switch (buffer[0])
-    {
-    case '0':
-      mode = '0';
-      /* code */
-      break;
-
-    case '1':
-      mode = '1';
-      /* code */
-      break;
-    
-    case '2':
-      mode = '2';
-      /* code */
-      break;
-
-    case '3':
-      mode = '3';
-      /* code */
-      break;
-    
-    case '4':
-      mode = '4';
-      /* code */
-      break;
-    
-    case '5':
-      mode = '5';
-      /* code */
-      break;
-
-    case '6':
-      mode = '6';
-      /* code */
-      break;
-
-          case '7':
-      mode = '7';
-      /* code */
-      break;
-
-          case '8':
-      mode = '8';
-      /* code */
-      break;
-
-          case '9':
-      mode = '9';
-      /* code */
-      break;
-    
-                case 'A':
-      mode = 'A';
-      /* code */
-      break;
-
-                case 'B':
-      mode = 'B';
-      /* code */
-      break;
-
-                case 'C':
-      mode = 'C';
-      /* code */
-      break;
-    default:
-      break;
-    }
-    /* code */
-  }
-        // digitalWrite(LED1, LOW);
-        // vTaskDelay(500 / portTICK_PERIOD_MS);
-        Serial.println(mode);
+        // Give CPU 0 time to execute its idle task
+        vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
+
+
+int data = 0;
 
 void setup() {
 
@@ -541,14 +629,22 @@ void setup() {
   #endif
   // END of Trinket-specific code.
 
+  strip_A.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
+  strip_C.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
+  strip_S.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
   strip_W.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
+
+  strip_A.show();            // Turn OFF all strip_C ASAP
+  strip_C.show();            // Turn OFF all strip_C ASAP
+  strip_S.show();            // Turn OFF all strip_C ASAP
   strip_W.show();            // Turn OFF all strip_C ASAP
+
+  strip_A.setBrightness(255); // Set BRIGHTNESS to about 1/5 (max = 255)
+  strip_C.setBrightness(255); // Set BRIGHTNESS to about 1/5 (max = 255)
+  strip_S.setBrightness(255); // Set BRIGHTNESS to about 1/5 (max = 255)
   strip_W.setBrightness(255); // Set BRIGHTNESS to about 1/5 (max = 255)
 
 
-  strip_C.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
-  strip_C.show();            // Turn OFF all strip_C ASAP
-  strip_C.setBrightness(255); // Set BRIGHTNESS to about 1/5 (max = 255)
   ////////////////////////////////////////////////////////////////////////
     URTCLIB_WIRE.begin();
 
@@ -568,7 +664,7 @@ void setup() {
     xTaskCreatePinnedToCore(
         blinkLed1,
         "LED1_Task",
-        1000,
+        4096,
         NULL,
         1,
         &ledTask1,
@@ -640,7 +736,13 @@ void loop() {
   {
     Solid_Color(255,127,0); // orange solid
 
-  }else if(mode == 'T') {
+  }else if (mode== 'F')
+  {
+    rainbowSection(10,84,10,strip_W);
+    rainbowSection(0,61,10,strip_A); // Rainbow effect
+    rainbow_Sign(0,35,10);
+
+  }else if(mode == 'G') {
     uint8_t IncomingHour = (uint8_t)((buffer[1] - '0') * 10 + (buffer[2] - '0'));
     uint8_t IncomingMin = (uint8_t)((buffer[3] - '0') * 10 + (buffer[4] - '0'));
   
@@ -653,13 +755,13 @@ void loop() {
 
     mode = 0;
     
-  }else if (mode == 'P')
+  }else if (mode == 'H')
   {
     String myString = String(rtc.hour()) + String(rtc.minute());
     SerialBT.print(myString);
     mode = 0;
     /* code */
-  }else if (mode == 'Z') // 
+  }else if (mode == 'I') // 
   {
     uint8_t clock_color = buffer[1];
 
@@ -695,5 +797,25 @@ void loop() {
   }else{
     // default_effect();
   }
+
+        
+      // if (data >= LED_COUNT_W)
+      // {
+      //     data = 0;
+      // }
+
+      // strip_A.clear();
+      // strip_A.setPixelColor(data, strip_A.Color(0,255,0));
+      // strip_A.show();
+
+      // SerialBT.println(data);
+      // Serial.println(data);
+      // delay(2000);
+      // data++;
+
+      
+  
+
+
 
 }
